@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
 } from 'react-native';
+import { Audio } from 'expo-av';
+import { SpeechRecognitionService } from '../services/speechRecognition';
 
 const MAX_MESSAGE_LENGTH = 1000;
 
@@ -22,6 +24,8 @@ export default function MessageInput({
   placeholder = "メッセージを入力..."
 }: MessageInputProps) {
   const [message, setMessage] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
   const handleSend = () => {
     const trimmedMessage = message.trim();
@@ -37,6 +41,74 @@ export default function MessageInput({
 
     onSendMessage(trimmedMessage);
     setMessage('');
+  };
+
+  const startRecording = async () => {
+    try {
+      // マイクロフォン権限のリクエスト
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('権限が必要です', 'マイクロフォンへのアクセス権限が必要です。');
+        return;
+      }
+
+      // 音声設定
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      // 録音開始
+      const recordingInstance = new Audio.Recording();
+      await recordingInstance.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+      await recordingInstance.startAsync();
+      
+      setRecording(recordingInstance);
+      setIsRecording(true);
+    } catch (error) {
+      console.error('録音開始エラー:', error);
+      Alert.alert('エラー', '録音を開始できませんでした。');
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      if (!recording) return;
+
+      setIsRecording(false);
+      await recording.stopAndUnloadAsync();
+      
+      const uri = recording.getURI();
+      setRecording(null);
+      
+      if (uri) {
+        // 音声をテキストに変換
+        try {
+          const result = await SpeechRecognitionService.recognizeSpeech(uri);
+          if (result.text) {
+            setMessage(result.text);
+            Alert.alert(
+              '音声認識完了', 
+              `認識されたテキスト: "${result.text}"\n信頼度: ${Math.round(result.confidence * 100)}%`
+            );
+          }
+        } catch (error) {
+          console.error('音声認識エラー:', error);
+          Alert.alert('音声認識エラー', '音声をテキストに変換できませんでした。もう一度お試しください。');
+        }
+      }
+    } catch (error) {
+      console.error('録音停止エラー:', error);
+      Alert.alert('エラー', '録音を停止できませんでした。');
+    }
+  };
+
+  const handleVoiceInput = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
   };
 
   return (
@@ -72,9 +144,19 @@ export default function MessageInput({
         </TouchableOpacity>
       </View>
       
-      {/* 音声入力ボタン（後で実装） */}
-      <TouchableOpacity style={styles.voiceButton}>
-        <Text style={styles.voiceButtonText}>🎤</Text>
+      {/* 音声入力ボタン */}
+      <TouchableOpacity 
+        style={[
+          styles.voiceButton,
+          isRecording && styles.voiceButtonRecording
+        ]}
+        onPress={handleVoiceInput}
+        disabled={loading}
+        accessibilityLabel={isRecording ? '録音停止' : '音声入力開始'}
+      >
+        <Text style={styles.voiceButtonText}>
+          {isRecording ? '⏹️' : '🎤'}
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -139,6 +221,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+  },
+  voiceButtonRecording: {
+    backgroundColor: '#e74c3c',
   },
   voiceButtonText: {
     fontSize: 20,
