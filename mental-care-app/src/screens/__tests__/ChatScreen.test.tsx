@@ -22,6 +22,11 @@ jest.mock('../../hooks/useAuth', () => ({
   }),
 }));
 
+// Create stable mock functions to prevent recreation on each render
+const mockSetCurrentConversation = jest.fn();
+const mockAddMessage = jest.fn();
+const mockSetIsLoading = jest.fn();
+
 jest.mock('../../stores/chatStore', () => ({
   useChatStore: () => ({
     messages: [
@@ -35,9 +40,9 @@ jest.mock('../../stores/chatStore', () => ({
     ],
     isLoading: false,
     currentConversation: null,
-    setCurrentConversation: jest.fn(),
-    addMessage: jest.fn(),
-    setIsLoading: jest.fn(),
+    setCurrentConversation: mockSetCurrentConversation,
+    addMessage: mockAddMessage,
+    setIsLoading: mockSetIsLoading,
   }),
 }));
 

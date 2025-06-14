@@ -11,14 +11,10 @@ process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY = 'mock_anon_key_for_testing';
   set: jest.fn(),
 };
 
-// Mock Web APIs
-(global as any).TextEncoder = jest.fn().mockImplementation(() => ({
-  encode: jest.fn(),
-}));
-
-(global as any).TextDecoder = jest.fn().mockImplementation(() => ({
-  decode: jest.fn(),
-}));
+// Mock Web APIs with real implementations
+const { TextEncoder, TextDecoder } = require('util');
+(global as any).TextEncoder = TextEncoder;
+(global as any).TextDecoder = TextDecoder;
 
 // Mock Expo modules
 jest.mock('expo-status-bar', () => ({
@@ -107,7 +103,7 @@ jest.mock('@clerk/clerk-expo', () => ({
 }));
 
 // Mock useWarmUpBrowser hook
-jest.mock('./hooks/useWarmUpBrowser', () => ({
+jest.mock('../hooks/useWarmUpBrowser', () => ({
   useWarmUpBrowser: jest.fn(),
 }));
 
@@ -142,7 +138,7 @@ jest.mock('./services/supabase', () => ({
 }));
 
 // Mock AsyncStorage
-jest.mock('react-native-async-storage', () => ({
+jest.mock('@react-native-async-storage/async-storage', () => ({
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
@@ -174,7 +170,7 @@ jest.mock('react-native', () => ({
   KeyboardAvoidingView: 'KeyboardAvoidingView',
 }));
 
-// Suppress console warnings in tests
+// Suppress specific console warnings in tests
 const originalWarn = console.warn;
 const originalError = console.error;
 
@@ -191,9 +187,7 @@ console.warn = (...args) => {
 console.error = (...args) => {
   if (
     typeof args[0] === 'string' &&
-    (args[0].includes('Warning: An update') || 
-     args[0].includes('act(...)') ||
-     args[0].includes('wrapped in act'))
+    args[0].includes('Warning: ReactDOM.render is no longer supported')
   ) {
     return;
   }
