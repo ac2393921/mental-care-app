@@ -11,6 +11,8 @@ import {
 import { useSignUp, useOAuth } from '@clerk/clerk-expo';
 import { useWarmUpBrowser } from '../hooks/useWarmUpBrowser';
 
+const MIN_PASSWORD_LENGTH = 8;
+
 interface SignupScreenProps {
   navigation: any;
 }
@@ -36,15 +38,15 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
       return;
     }
 
-    if (password.length < 8) {
-      Alert.alert('エラー', 'パスワードは8文字以上で入力してください');
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      Alert.alert('エラー', `パスワードは${MIN_PASSWORD_LENGTH}文字以上で入力してください`);
       return;
     }
 
     setLoading(true);
     try {
       await signUp.create({
-        emailAddress: email,
+        emailAddress: email.trim(),
         password,
       });
 
@@ -144,7 +146,7 @@ export default function SignupScreen({ navigation }: SignupScreenProps) {
         />
         <TextInput
           style={styles.input}
-          placeholder="パスワード（8文字以上）"
+          placeholder={`パスワード（${MIN_PASSWORD_LENGTH}文字以上）`}
           value={password}
           onChangeText={setPassword}
           secureTextEntry

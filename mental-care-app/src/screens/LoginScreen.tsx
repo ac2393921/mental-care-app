@@ -31,7 +31,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     setLoading(true);
     try {
       const signInAttempt = await signIn.create({
-        identifier: email,
+        identifier: email.trim(),
         password,
       });
 

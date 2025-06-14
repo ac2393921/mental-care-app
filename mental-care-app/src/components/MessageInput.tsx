@@ -8,6 +8,8 @@ import {
   Alert,
 } from 'react-native';
 
+const MAX_MESSAGE_LENGTH = 1000;
+
 interface MessageInputProps {
   onSendMessage: (message: string) => void;
   loading?: boolean;
@@ -28,8 +30,8 @@ export default function MessageInput({
       return;
     }
     
-    if (trimmedMessage.length > 1000) {
-      Alert.alert('エラー', 'メッセージは1000文字以内で入力してください');
+    if (trimmedMessage.length > MAX_MESSAGE_LENGTH) {
+      Alert.alert('エラー', `メッセージは${MAX_MESSAGE_LENGTH}文字以内で入力してください`);
       return;
     }
 
@@ -47,8 +49,11 @@ export default function MessageInput({
           placeholder={placeholder}
           placeholderTextColor="#95a5a6"
           multiline
-          maxLength={1000}
+          maxLength={MAX_MESSAGE_LENGTH}
           editable={!loading}
+          accessibilityLabel="メッセージ入力"
+          returnKeyType="send"
+          onSubmitEditing={handleSend}
         />
         <TouchableOpacity
           style={[

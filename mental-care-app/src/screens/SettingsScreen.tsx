@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, Switch, Alert } from 'react-native';
 import { useAuth } from '../hooks/useAuth';
 
 export default function SettingsScreen() {
@@ -12,6 +12,7 @@ export default function SettingsScreen() {
       await signOut();
     } catch (error) {
       console.error('Sign out error:', error);
+      Alert.alert('エラー', 'ログアウトに失敗しました。再度お試しください。');
     }
   };
 
@@ -28,7 +29,7 @@ export default function SettingsScreen() {
           <View style={styles.accountInfo}>
             <Text style={styles.accountLabel}>メールアドレス</Text>
             <Text style={styles.accountValue}>
-              {user?.emailAddresses[0]?.emailAddress || 'ゲストユーザー'}
+              {user?.emailAddresses?.[0]?.emailAddress ?? 'ゲストユーザー'}
             </Text>
           </View>
         </View>

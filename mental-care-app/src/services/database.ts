@@ -17,10 +17,13 @@ async function getOrCreateUser(clerkId: string): Promise<string> {
     throw fetchError;
   }
 
-  // ユーザーが存在しない場合は作成
+  // ユーザーが存在しない場合は作成（upsertで競合を回避）
   const { data: newUser, error: createError } = await supabase
     .from('users')
-    .insert({ clerk_id: clerkId })
+    .upsert(
+      { clerk_id: clerkId },
+      { onConflict: 'clerk_id' }
+    )
     .select('id')
     .single();
 

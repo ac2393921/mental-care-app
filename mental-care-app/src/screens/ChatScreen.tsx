@@ -19,7 +19,7 @@ import { ConversationService } from '../services/conversation';
 
 export default function ChatScreen() {
   const { user } = useAuth();
-  const { messages, isLoading, addMessage, setIsLoading, currentConversation, setCurrentConversation } = useChatStore();
+  const { isLoading, setIsLoading, currentConversation, setCurrentConversation } = useChatStore();
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const [conversationService] = useState(() => new ConversationService());
   const flatListRef = useRef<FlatList>(null);
@@ -94,14 +94,16 @@ export default function ChatScreen() {
       // 一時的なユーザーメッセージをサーバーからのメッセージで置き換え
       setLocalMessages(prev => {
         const withoutTemp = prev.filter(msg => msg.id !== tempUserMessage.id);
-        return [...withoutTemp, userMessage, assistantMessage];
+        const updated = [...withoutTemp, userMessage, assistantMessage];
+        
+        // 最初のメッセージの場合、会話タイトルを更新（welcome messageの後の最初のユーザーメッセージ）
+        if (prev.length === 1) { // welcome messageのみ
+          const title = conversationService.generateConversationTitle(content);
+          // タイトル更新の処理は後で実装
+        }
+        
+        return updated;
       });
-
-      // 最初のメッセージの場合、会話タイトルを更新
-      if (localMessages.length === 1) { // welcome messageのみ
-        const title = conversationService.generateConversationTitle(content);
-        // タイトル更新の処理は後で実装
-      }
 
     } catch (error) {
       console.error('Error sending message:', error);

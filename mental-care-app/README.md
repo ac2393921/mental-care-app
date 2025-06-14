@@ -290,13 +290,13 @@ npm install --force   # 依存関係が壊れる可能性
 ```
 
 **Node.js バージョン警告**:
-```
+```text
 npm WARN EBADENGINE Unsupported engine
 ```
 → Jest 30.0.0がNode.js 18.14.0+を要求するため（機能的には問題なし）
 
 **廃止警告**:
-```
+```text
 npm WARN deprecated @testing-library/jest-native
 ```
 → テストライブラリの移行推奨（現在の機能に影響なし）

@@ -176,6 +176,8 @@ jest.mock('react-native', () => ({
 
 // Suppress console warnings in tests
 const originalWarn = console.warn;
+const originalError = console.error;
+
 console.warn = (...args) => {
   if (
     typeof args[0] === 'string' &&
@@ -184,4 +186,16 @@ console.warn = (...args) => {
     return;
   }
   originalWarn.call(console, ...args);
+};
+
+console.error = (...args) => {
+  if (
+    typeof args[0] === 'string' &&
+    (args[0].includes('Warning: An update') || 
+     args[0].includes('act(...)') ||
+     args[0].includes('wrapped in act'))
+  ) {
+    return;
+  }
+  originalError.call(console, ...args);
 };

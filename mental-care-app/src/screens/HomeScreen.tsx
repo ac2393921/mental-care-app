@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useAuth, useUser } from '@clerk/clerk-expo';
 
 export default function HomeScreen() {
@@ -11,13 +11,14 @@ export default function HomeScreen() {
       await signOut();
     } catch (error) {
       console.error('Sign out error:', error);
+      Alert.alert('エラー', 'ログアウトに失敗しました。再度お試しください。');
     }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.welcome}>
-        ようこそ、{user?.emailAddresses[0]?.emailAddress}さん
+        ようこそ、{user?.primaryEmailAddress?.emailAddress ?? 'ユーザー'}さん
       </Text>
       <Text style={styles.subtitle}>
         あなたの心の相談相手がここにいます

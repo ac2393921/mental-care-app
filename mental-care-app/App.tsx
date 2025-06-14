@@ -15,7 +15,7 @@ import SettingsScreen from './src/screens/SettingsScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!;
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 if (!publishableKey) {
   throw new Error(
@@ -58,8 +58,11 @@ function TabNavigator() {
         component={ChatScreen}
         options={{
           tabBarLabel: 'チャット',
+          tabBarAccessibilityLabel: 'チャット画面',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '💬' : '💭'}</Text>
+            <Text style={{ fontSize: 24 }} accessibilityLabel="チャットアイコン">
+              {focused ? '💬' : '💭'}
+            </Text>
           ),
         }}
       />
@@ -68,8 +71,11 @@ function TabNavigator() {
         component={HistoryScreen}
         options={{
           tabBarLabel: '履歴',
+          tabBarAccessibilityLabel: '履歴画面',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '📚' : '📖'}</Text>
+            <Text style={{ fontSize: 24 }} accessibilityLabel="履歴アイコン">
+              {focused ? '📚' : '📖'}
+            </Text>
           ),
         }}
       />
@@ -78,8 +84,11 @@ function TabNavigator() {
         component={SettingsScreen}
         options={{
           tabBarLabel: '設定',
+          tabBarAccessibilityLabel: '設定画面',
           tabBarIcon: ({ focused }) => (
-            <Text style={{ fontSize: 24 }}>{focused ? '⚙️' : '🔧'}</Text>
+            <Text style={{ fontSize: 24 }} accessibilityLabel="設定アイコン">
+              {focused ? '⚙️' : '🔧'}
+            </Text>
           ),
         }}
       />

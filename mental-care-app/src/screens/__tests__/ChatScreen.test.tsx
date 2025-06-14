@@ -83,8 +83,16 @@ jest.mock('react-native', () => {
 });
 
 describe('ChatScreen', () => {
+  let consoleErrorSpy: jest.SpyInstance;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    // Console errorsをモックして警告を抑制
+    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   it('renders correctly', () => {

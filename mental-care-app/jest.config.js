@@ -16,10 +16,9 @@ module.exports = {
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
   transformIgnorePatterns: [
-    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|expo-modules-core|@clerk|@supabase|zustand)/)'
+    'node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|expo-modules-core|@clerk|@supabase|@supabase\\/supabase-js|zustand)/)'
   ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1'
-  },
-  testEnvironment: 'jsdom'
+  }
 };
