@@ -1,9 +1,41 @@
 import { supabase } from './supabase';
 import { Conversation, Message, MoodLog, Usage } from '../types';
 
+// Clerk IDからSupabase User IDを取得または作成
+async function getOrCreateUser(clerkId: string): Promise<string> {
+  const { data: existingUser, error: fetchError } = await supabase
+    .from('users')
+    .select('id')
+    .eq('clerk_id', clerkId)
+    .single();
+
+  if (existingUser) {
+    return existingUser.id;
+  }
+
+  if (fetchError && fetchError.code !== 'PGRST116') {
+    throw fetchError;
+  }
+
+  // ユーザーが存在しない場合は作成（upsertで競合を回避）
+  const { data: newUser, error: createError } = await supabase
+    .from('users')
+    .upsert(
+      { clerk_id: clerkId },
+      { onConflict: 'clerk_id' }
+    )
+    .select('id')
+    .single();
+
+  if (createError) throw createError;
+  return newUser.id;
+}
+
 export class DatabaseService {
   // Conversation methods
-  static async createConversation(userId: string, title?: string): Promise<Conversation> {
+  static async createConversation(clerkId: string, title?: string): Promise<Conversation> {
+    const userId = await getOrCreateUser(clerkId);
+    
     const { data, error } = await supabase
       .from('conversations')
       .insert({ user_id: userId, title })
@@ -14,7 +46,9 @@ export class DatabaseService {
     return data;
   }
 
-  static async getConversations(userId: string): Promise<Conversation[]> {
+  static async getConversations(clerkId: string): Promise<Conversation[]> {
+    const userId = await getOrCreateUser(clerkId);
+    
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
@@ -54,10 +88,12 @@ export class DatabaseService {
 
   // Mood log methods
   static async createMoodLog(
-    userId: string,
+    clerkId: string,
     moodScore: number,
     notes?: string
   ): Promise<MoodLog> {
+    const userId = await getOrCreateUser(clerkId);
+    
     const { data, error } = await supabase
       .from('mood_logs')
       .insert({ user_id: userId, mood_score: moodScore, notes })
@@ -68,7 +104,9 @@ export class DatabaseService {
     return data;
   }
 
-  static async getMoodLogs(userId: string, limit = 30): Promise<MoodLog[]> {
+  static async getMoodLogs(clerkId: string, limit = 30): Promise<MoodLog[]> {
+    const userId = await getOrCreateUser(clerkId);
+    
     const { data, error } = await supabase
       .from('mood_logs')
       .select('*')
@@ -81,7 +119,8 @@ export class DatabaseService {
   }
 
   // Usage tracking methods
-  static async incrementDailyUsage(userId: string): Promise<Usage> {
+  static async incrementDailyUsage(clerkId: string): Promise<Usage> {
+    const userId = await getOrCreateUser(clerkId);
     const today = new Date().toISOString().split('T')[0];
     
     const { data: existing, error: fetchError } = await supabase
@@ -115,7 +154,8 @@ export class DatabaseService {
     }
   }
 
-  static async getDailyUsage(userId: string): Promise<number> {
+  static async getDailyUsage(clerkId: string): Promise<number> {
+    const userId = await getOrCreateUser(clerkId);
     const today = new Date().toISOString().split('T')[0];
     
     const { data, error } = await supabase
